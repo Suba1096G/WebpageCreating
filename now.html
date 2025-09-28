@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaHub - Movies & Music</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #ef4444;
+            --secondary-dark: #dc2626;
+            --background: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent: #6366f1;
+        }
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 0px;
+        }
+        header {
+            position: sticky;
+            top: 0;
+            background-color: var(--background);
+            border-bottom: 1px solid rgba(5, 0, 0, 0.871);
+            padding: 15px 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-icon {
+            margin-right: 10px;
+            color: var(--secondary);
+        }
+        
+        .search-container {
+            position: relative;
+            width: 350px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+        }
+
+        main {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            display: inline-block;
+        }
+        
+        .carousel-container {
+            position: relative;
+            margin: 30px 0;
+        }
+        
+        .carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            gap: 20px;
+            padding: 20px 10px;
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+        }
+        
+        .carousel::-webkit-scrollbar {
+            display: none; 
+        }
+        
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .carousel-arrow:hover {
+            background-color: var(--primary);
+        }
+        
+        .carousel-arrow.left {
+            left: -20px;
+        }
+        
+        .carousel-arrow.right {
+            right: -20px;
+        }
+        
+        .card {
+            flex: 0 0 220px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card-img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 50px auto;
+            max-width: 800px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-header {
+            position: relative;
+        }
+        .modal-img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        .modal-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .media-player {
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .carousel-arrow {
+                display: none;
+            }
+            
+            .card {
+                flex: 0 0 180px;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+            
+            .modal-img {
+                height: 250px;
+            }
+            
+            .modal-title {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                flex: 0 0 150px;
+            }
+            
+            .card-img {
+                height: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">
+                    <span class="logo-icon">🎬</span> MediaHub
+                </a>
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search movies or music...">
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="moviesSection">
+            <h2 class="section-title">Trending Movies</h2>
+            <div class="carousel-container">
+                <div class="carousel" id="moviesCarousel">
+                </div>
+                <button class="carousel-arrow left" id="moviesLeftArrow">‹</button>
+                <button class="carousel-arrow right" id="moviesRightArrow">›</button>
+            </div>
+        </section>
+
+        <section id="musicSection">
+            <h2 class="section-title">Popular Music</h2>
+            <div class="carousel-container">
+                <div class="carousel" id="musicCarousel">
+                </div>
+                <button class="carousel-arrow left" id="musicLeftArrow">‹</button>
+                <button class="carousel-arrow right" id="musicRightArrow">›</button>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <div class="modal-header">
+                <img class="modal-img" id="modalImage" src="" alt="">
+            </div>
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <p class="modal-description" id="modalDescription"></p>
+                <div class="media-player" id="mediaPlayer"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2023 MediaHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+      const moviesData = [
+    {
+        id: 1,
+        title: "Baahubali: The Beginning",
+        image: "https://img.youtube.com/vi/edLzz-EdRX0/hqdefault.jpg", 
+        description: "In the kingdom of Mahishmati, an infant is the sole survivor of a massacre. He grows up to become a warrior and seeks revenge against the tyrant who killed his family.",
+        mediaUrl:"https://www.youtube.com/embed/edLzz-EdRX0",
+        mediaType: "video"
+    },
+    {
+        id: 2,
+        title: "Kabali",
+        image: "https://img.youtube.com/vi/6uTy89qM13o/hqdefault.jpg",  
+        description: "A former gangster returns to Malaysia after serving a prison sentence and seeks revenge against the syndicate that destroyed his life.",
+        mediaUrl: "https://www.youtube.com/embed/6uTy89qM13o",
+        mediaType: "video"
+    },
+    {
+        id: 3,
+        title: "Master",
+        image: "https://img.youtube.com/vi/LBEjNXTy49o/hqdefault.jpg",  
+        description: "A professor with a drinking problem takes a job at a juvenile reform school, where he clashes with a ruthless gangster running the facility.",
+        mediaUrl: "https://www.youtube.com/embed/LBEjNXTy49o",
+        mediaType: "video"
+    },
+    {
+        id: 4,
+        title: "Asuran",
+        image: "https://img.youtube.com/vi/BoNHEtzh-Zw/hqdefault.jpg", 
+        description: "A man's past comes back to haunt him when he returns to his village to protect his family from a powerful landlord's wrath.",
+        mediaUrl: "https://www.youtube.com/embed/BoNHEtzh-Zw",
+        mediaType: "video"
+    },
+    {
+        id: 5,
+        title: "Vikram",
+        image: "https://img.youtube.com/vi/sjCOgzKNghw/hqdefault.jpg", 
+        description: "A special task force hunts down a mysterious assassin after a police officer is killed in a brutal attack.",
+        mediaUrl: "https://www.youtube.com/embed/sjCOgzKNghw",
+        mediaType: "video"
+    },
+     {
+        id: 6,
+        title: "Irumugan",
+        image: "https://img.youtube.com/vi/vU8ig7Hh2Ts/hqdefault.jpg",  
+        description: "Iru Mugan (2016) is a Tamil-language sci-fi action thriller starring Vikram in a dual role as a RAW agent and a psychotic villain named Love. The story revolves around a mysterious drug that grants superhuman strength and a series of bizarre attacks linked to it. As the agent investigates, he uncovers a deadly conspiracy that blurs the line between science and madness.",
+        mediaUrl: "https://www.youtube.com/embed/vU8ig7Hh2Ts",
+        mediaType: "video"
+    },
+     {
+        id: 7,
+        title: "Adithya Varma",
+        image: "https://img.youtube.com/vi/abM1bwWWvZ8/hqdefault.jpg",  
+        description: "Adithya Varma (2019) is a Tamil-language romantic drama starring Dhruv Vikram in his debut role. The film follows a brilliant but impulsive young surgeon whose life spirals into self-destruction after his girlfriend is forced to marry someone else. Battling anger issues and addiction, Adithya must confront his inner demons to reclaim his life and career.",
+        mediaUrl: "https://www.youtube.com/embed/abM1bwWWvZ8",
+        mediaType: "video"
+    }
+];
+
+
+        const musicData = [
+    {
+        id: 1,
+        title: "Why This Kolaveri Di - Dhanush",
+        image: "https://img.youtube.com/vi/Ja168gMpb3o/hqdefault.jpg",
+        description: "A viral Tamil-English song from the movie *3*, sung by Dhanush.",
+        mediaUrl: "https://www.youtube.com/embed/Ja168gMpb3o",
+        mediaType: "video"
+    },
+    {
+        id: 2,
+        title: "Vaathi Coming - Anirudh",
+        image: "https://img.youtube.com/vi/fRD_3vJagxk/hqdefault.jpg",
+        description: "A mass hit from *Master*, composed and sung by Anirudh.",
+        mediaUrl: "https://www.youtube.com/embed/fRD_3vJagxk",
+        mediaType: "video"
+    },
+    {
+        id: 3,
+        title: "Rowdy Baby - Dhanush & Dhee",
+        image: "https://img.youtube.com/vi/x6Q7c9RyMzk/hqdefault.jpg",
+        description: "One of the most viewed Indian songs on YouTube, from the movie *Maari 2*.",
+        mediaUrl: "https://www.youtube.com/embed/x6Q7c9RyMzk",
+        mediaType: "video"
+    },
+    {
+        id: 4,
+        title: "Tum Tum - Enemy",
+        image: "https://img.youtube.com/vi/yGUKYKSJJc8/hqdefault.jpg",
+        description: "A peppy romantic track from *Enemy* that became a viral dance number.",
+        mediaUrl: "https://www.youtube.com/embed/yGUKYKSJJc8",
+        mediaType: "video"
+    },
+    {
+        id: 5,
+        title: "Arabic Kuthu - Beast",
+        image: "https://img.youtube.com/vi/KUN5Uf9mObQ/hqdefault.jpg",
+        description: "A chartbuster dance song from *Beast*, sung by Anirudh and Jonita Gandhi.",
+        mediaUrl: "https://www.youtube.com/embed/KUN5Uf9mObQ",
+        mediaType: "video"
+    },
+      {
+        id: 6,
+        title: "Yaen ennai pirindhaai  - Adithya Varma",
+        image: "https://img.youtube.com/vi/9pWrJM5nkl4/hqdefault.jpg",
+        description: "Yaen Ennai Pirindhaai is a soulful Tamil melody from the movie Adithya Varma, composed by Radhan and sung by Sid Sriram. The song captures the emotional turmoil of heartbreak and longing, with poignant lyrics and a haunting vocal performance that beautifully reflect the protagonist’s inner pain",
+        mediaUrl: "https://www.youtube.com/embed/9pWrJM5nkl4",
+        mediaType: "video"
+    },
+      {
+        id: 7,
+        title: " Kanimaa - Retro",
+        image: "https://img.youtube.com/vi/5CEXL8kfGL4/hqdefault.jpg",
+        description: "Kanimaa is a vibrant Tamil folk-inspired track from the movie Retro (2025), composed by Santhosh Narayanan and sung with The Indian Choral Ensemble. Featuring Suriya and Pooja Hegde, the song blends energetic dance, festive visuals, and a catchy hook step that quickly went viral.",
+        mediaUrl: "https://www.youtube.com/embed/5CEXL8kfGL4",
+        mediaType: "video"
+    }
+];
+
+        const moviesCarousel = document.getElementById('moviesCarousel');
+        const musicCarousel = document.getElementById('musicCarousel');
+        const moviesLeftArrow = document.getElementById('moviesLeftArrow');
+        const moviesRightArrow = document.getElementById('moviesRightArrow');
+        const musicLeftArrow = document.getElementById('musicLeftArrow');
+        const musicRightArrow = document.getElementById('musicRightArrow');
+        const searchInput = document.getElementById('searchInput');
+        const modal = document.getElementById('detailModal');
+        const modalClose = document.getElementById('modalClose');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        const mediaPlayer = document.getElementById('mediaPlayer');
+
+        function createCard(item, type) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <img src="${item.image}" alt="${item.title}" class="card-img">
+                <div class="card-content">
+                    <h3 class="card-title">${item.title}</h3>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                openModal(item);
+            });
+            
+            return card;
+        }
+
+    
+        function populateCarousels() {
+        
+            moviesCarousel.innerHTML = '';
+            musicCarousel.innerHTML = '';
+            
+            moviesData.forEach(movie => {
+                moviesCarousel.appendChild(createCard(movie, 'movie'));
+            });
+            
+            musicData.forEach(music => {
+                musicCarousel.appendChild(createCard(music, 'music'));
+            });
+        }
+
+        function openModal(item) {
+            modalImage.src = item.image;
+            modalImage.alt = item.title;
+            modalTitle.textContent = item.title;
+            modalDescription.textContent = item.description;
+            
+            if (item.mediaType === 'video') {
+                mediaPlayer.innerHTML = `
+                    <iframe 
+                        width="100%" 
+                        height="315" 
+                        src="${item.mediaUrl}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                `;
+            } else if (item.mediaType === 'audio') {
+                mediaPlayer.innerHTML = `
+                    <audio controls style="width: 100%">
+                        <source src="${item.mediaUrl}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                `;
+            }
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; 
+            
+            const iframe = mediaPlayer.querySelector('iframe');
+            if (iframe) {
+                const iframeSrc = iframe.src;
+                iframe.src = iframeSrc; 
+            }
+            
+            const audio = mediaPlayer.querySelector('audio');
+            if (audio) {
+                audio.pause();
+            }
+        }
+
+        function filterContent() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            moviesCarousel.innerHTML = '';
+            const filteredMovies = moviesData.filter(movie => 
+                movie.title.toLowerCase().includes(searchTerm)
+            );
+            
+            filteredMovies.forEach(movie => {
+                moviesCarousel.appendChild(createCard(movie, 'movie'));
+            });
+            
+            musicCarousel.innerHTML = '';
+            const filteredMusic = musicData.filter(music => 
+                music.title.toLowerCase().includes(searchTerm)
+            );
+            
+            filteredMusic.forEach(music => {
+                musicCarousel.appendChild(createCard(music, 'music'));
+            });
+        }
+        moviesLeftArrow.addEventListener('click', () => {
+            moviesCarousel.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+        
+        moviesRightArrow.addEventListener('click', () => {
+            moviesCarousel.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+        
+        musicLeftArrow.addEventListener('click', () => {
+            musicCarousel.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+        
+        musicRightArrow.addEventListener('click', () => {
+            musicCarousel.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+        
+        searchInput.addEventListener('input', filterContent);
+        
+        modalClose.addEventListener('click', closeModal);
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        function handleSwipe(carousel) {
+            const difference = touchStartX - touchEndX;
+            
+            if (Math.abs(difference) > 50) { 
+                if (difference > 0) {
+
+                    carousel.scrollBy({ left: 300, behavior: 'smooth' });
+                } else {
+                    
+                    carousel.scrollBy({ left: -300, behavior: 'smooth' });
+                }
+            }
+        }
+        
+        moviesCarousel.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        moviesCarousel.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe(moviesCarousel);
+        });
+        
+        musicCarousel.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        musicCarousel.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe(musicCarousel);
+        });
+        populateCarousels();
+    </script>
+</body>
+</html>
